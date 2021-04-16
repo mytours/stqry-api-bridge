@@ -36,11 +36,15 @@ window.stqry = {
       * @param {string} [customKey] storage key - add if you want to use custom storage key
       */
     set: function (changeset, callback, customKey) {
-      console.warn('Saving into storage: ', changeset)
-
-      var storedData = getStoredData(customKey || STORAGE_KEY)
-      setStoredData(customKey || STORAGE_KEY, Object.assign(storedData, changeset))
-
+      var storageKey = customKey || STORAGE_KEY
+      
+      var storedData = getStoredData(storageKey)
+      var value = Object.assign(storedData, changeset)
+      setStoredData(storageKey, value)
+      
+      console.warn('Saving into storage:')
+      console.log('[key]', storageKey)
+      console.log('[value]', value)
       callback()
     },
     /**
@@ -49,17 +53,21 @@ window.stqry = {
       * @param {string} [customKey] storage key - add if you want to use custom storage key
       */
     get: function (keys, callback, customKey) {
-      console.warn('Getting from storage: ', keys)
-
-      var storedData = getStoredData(customKey || STORAGE_KEY)
-
+      var storageKey = customKey || STORAGE_KEY
+      var storedData = getStoredData(storageKey)
+      
 			if (keys && Array.isArray(keys)) {
-				Object.keys(storedData).forEach(key => {
-					if (!keys.includes(key)) {
-						delete storedData[key]
+        Object.keys(storedData).forEach(key => {
+          if (!keys.includes(key)) {
+            delete storedData[key]
 					}
 				})
 			}
+
+      console.warn('Getting from storage:')
+      console.log('[object keys]', keys)
+      console.log('[key]', storageKey)
+      console.log('[value]', storedData)
 
       callback(storedData)
     },
@@ -69,22 +77,26 @@ window.stqry = {
       * @param {string} [customKey] storage key - add if you want to use custom storage key
       */
     remove: function (keys, callback, customKey) {
-      console.warn('Removing from storage:', keys)
-
+      var storageKey = customKey || STORAGE_KEY
       if (keys && Array.isArray(keys)) {
-        var storedData = getStoredData(customKey || STORAGE_KEY)
-
+        var storedData = getStoredData(storageKey)
+        
 				keys.forEach(key => {
-					delete storedData[key]
+          delete storedData[key]
 				})
-
-        setStoredData(customKey || STORAGE_KEY, storedData)
+        
+        setStoredData(storageKey, storedData)
+        console.warn('Removing from storage:')
+        console.log('[object keys]', keys)
+        console.log('[key]', storageKey)
 			} else {
-				Object.keys(window.localStorage).forEach(function (key) {
-          if (key.startsWith(customKey || STORAGE_KEY)) {
+        Object.keys(window.localStorage).forEach(function (key) {
+          if (key.startsWith(storageKey)) {
             window.localStorage.removeItem(key)
           }
         })
+        console.warn('Removing from storage:')
+        console.log('[key]', storageKey)
 			}
 
       callback()
