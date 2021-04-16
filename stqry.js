@@ -56,13 +56,13 @@ window.stqry = {
       var storageKey = customKey || STORAGE_KEY
       var storedData = getStoredData(storageKey)
       
-			if (keys && Array.isArray(keys)) {
+      if (keys && Array.isArray(keys)) {
         Object.keys(storedData).forEach(key => {
           if (!keys.includes(key)) {
             delete storedData[key]
-					}
-				})
-			}
+          }
+        })
+      }
 
       console.warn('Getting from storage:')
       console.log('[object keys]', keys)
@@ -81,15 +81,15 @@ window.stqry = {
       if (keys && Array.isArray(keys)) {
         var storedData = getStoredData(storageKey)
         
-				keys.forEach(key => {
+        keys.forEach(key => {
           delete storedData[key]
-				})
+        })
         
         setStoredData(storageKey, storedData)
         console.warn('Removing from storage:')
         console.log('[object keys]', keys)
         console.log('[key]', storageKey)
-			} else {
+      } else {
         Object.keys(window.localStorage).forEach(function (key) {
           if (key.startsWith(storageKey)) {
             window.localStorage.removeItem(key)
@@ -97,7 +97,7 @@ window.stqry = {
         })
         console.warn('Removing from storage:')
         console.log('[key]', storageKey)
-			}
+      }
 
       callback()
     }
