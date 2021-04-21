@@ -29,6 +29,56 @@ function getStoredData(key) {
   }
 }
 
+var reactNativeCallbacks = {}
+var lastReactNativeCallbackId = 0;
+/**
+  * @param {string} action action to take in react native world
+  * @param {any} data data to send to react native world
+  * @param {function} callback callback for when the action is finished
+  */
+function callReactNative(action, data, callback) {
+  if (callback) {
+    var callbackId = lastReactNativeCallbackId
+    var message = {
+      action: action,
+      data: data,
+      callbackId: callbackId,
+    }
+    reactNativeCallbacks[callbackId] = callback
+    lastReactNativeCallbackId++
+    window.ReactNativeWebView.postMessage(JSON.stringify(message))
+  }
+  else {
+    var message = {
+      action: action,
+      data: data,
+    }
+    window.ReactNativeWebView.postMessage(JSON.stringify(message))
+  }
+}
+if (window.stqryRuntime === "ReactNative") {
+  window.addEventListener('message', function(event) {
+    var data = event.data
+    var message = JSON.parse(data)
+    if (message) {
+      var callbackId = message.callbackId
+      var args = message.args
+      var callback = reactNativeCallbacks[callbackId]
+      if (callback) {
+        callback.apply(null, args)
+        delete reactNativeCallbacks[callbackId] // can only call back once
+      }
+      else {
+        // callback is not set up at the moment
+      }
+    }
+    else {
+      // malformed message, ignore
+    }
+  })
+}
+
+
 window.stqry = {
   storage: {
     /**
@@ -39,6 +89,10 @@ window.stqry = {
     set: function (changeset, callback, customKey) {
       var storageKey = customKey || STORAGE_KEY
       
+      if (window.stqryRuntime === "ReactNative") {
+        callReactNative("storage.set", { changeset: changeset, storageKey: storageKey }, callback)
+        return
+      }
       var storedData = getStoredData(storageKey)
       var value = Object.assign(storedData, changeset)
       setStoredData(storageKey, value)
@@ -55,6 +109,10 @@ window.stqry = {
       */
     get: function (keys, callback, customKey) {
       var storageKey = customKey || STORAGE_KEY
+      if (window.stqryRuntime === "ReactNative") {
+        callReactNative("storage.get", { keys: keys, storageKey: storageKey }, callback)
+        return
+      }
       var storedData = getStoredData(storageKey)
       
       if (keys && Array.isArray(keys)) {
@@ -79,6 +137,10 @@ window.stqry = {
       */
     remove: function (keys, callback, customKey) {
       var storageKey = customKey || STORAGE_KEY
+      if (window.stqryRuntime === "ReactNative") {
+        callReactNative("storage.remove", { keys: keys, storageKey: storageKey }, callback)
+        return
+      }
       if (keys && Array.isArray(keys)) {
         var storedData = getStoredData(storageKey)
         
@@ -112,6 +174,11 @@ window.stqry = {
       * @param {function()} callback callback function - calling after link openned
       */
     openInternal: function (data, callback) {
+      if (window.stqryRuntime === "ReactNative") {
+        callReactNative("linking.openInternal", { params: data })
+        if (callback) callback()
+        return
+      }
       console.warn('Opening internal link: [id] [type] [subtype]', data)
       if (callback) callback()
     },
@@ -120,6 +187,11 @@ window.stqry = {
       * @param {function()} callback callback function - calling after link openned
       */
     openExternal: function (link, callback) {
+      if (window.stqryRuntime === "ReactNative") {
+        callReactNative("linking.openExternal", { link: link })
+        if (callback) callback()
+        return
+      }
       console.warn('Opening external link: ', link)
       if (callback) callback()
     }
