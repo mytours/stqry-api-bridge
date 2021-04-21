@@ -61,15 +61,18 @@ if (window.stqryRuntime === "ReactNative") {
     var data = event.data
     var message = JSON.parse(data)
     if (message) {
-      var callbackId = message.callbackId
-      var args = message.args
-      var callback = reactNativeCallbacks[callbackId]
-      if (callback) {
-        callback.apply(null, args)
-        delete reactNativeCallbacks[callbackId] // can only call back once
-      }
-      else {
-        // callback is not set up at the moment
+      var action = message.action
+      if (action === "callback") {
+        var callbackId = message.callbackId
+        var args = message.args
+        var callback = reactNativeCallbacks[callbackId]
+        if (callback) {
+          callback.apply(null, args)
+          delete reactNativeCallbacks[callbackId] // can only call back once
+        }
+        else {
+          // callback is not set up at the moment
+        }
       }
     }
     else {
