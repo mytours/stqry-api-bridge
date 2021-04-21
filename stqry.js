@@ -7,7 +7,8 @@ var STORAGE_KEY = 'stqry_dataset'
 function getStoredData(key) {
   var storedData = {}
   try {
-    storedData = JSON.parse(window.localStorage.getItem(key) || '') || {}
+    var dataStr = window.localStorage.getItem(key)
+    storedData = dataStr ? JSON.parse(dataStr) : {}
   } catch (error) {
     console.error(error)
   }
