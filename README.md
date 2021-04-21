@@ -24,3 +24,7 @@ window.onload = function () {
 ## Testing
 
 When testing your web app locally the console will output details of what is being stored and what internal links will be opened. This allows you to test the app before uploading it to the STQRY Builder.
+
+## Test suite
+
+The test suite for `stqry.js` can be found in `stqry-test/` folder. Load the page in a browser or one of the STQRY apps to test `stqry.js` methods.
