@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>STQRY.js test suite</title>
+  </head>
+  <body>
+    <script src="./stqry.js"></script>
+    <script type="text/javascript">
+      function assert(statement) {
+        if (!statement) {
+          alert('False assertion')
+        }
+      }
+
+      // should set 1 key, get 1 key
+      function test_setGet(done) {
+        window.stqry.storage.set({ "foo": "bar" }, function () {
+          window.stqry.storage.get(["foo"], function (data) {
+            assert(data)
+            assert(Object.keys(data).length === 1)
+            assert(data.foo === "bar")
+            // clean up
+            window.stqry.storage.remove(null, done)
+          })
+        })
+      }
+      // should set 1 key for customKey, get the right key for customKey
+      function test_setGetCustomKey(done) {
+        var customKeyBob = "bobs_dataset"
+        var customKeyAlice = "alices_dataset"
+        window.stqry.storage.set({ "foo": "bar_bob" }, function () {
+          window.stqry.storage.set({ "foo": "bar_alice" }, function () {
+            window.stqry.storage.get(["foo"], function (data) {
+              assert(data)
+              assert(Object.keys(data).length === 1)
+              assert(data.foo === "bar_bob")
+              window.stqry.storage.get(["foo"], function (data) {
+                assert(data)
+                assert(Object.keys(data).length === 1)
+                assert(data.foo === "bar_alice")
+                // clean up
+                window.stqry.storage.remove(null, function () {
+                  window.stqry.storage.remove(null, done, customKeyAlice)
+                }, customKeyBob)
+              }, customKeyAlice)
+            }, customKeyBob)
+          }, customKeyAlice)
+        }, customKeyBob)
+      }
+      // should set 2 keys, get all keys
+      function test_setGetAll(done) {
+        window.stqry.storage.set({ "foo_1": "bar", "foo_2": "bar" }, function () {
+          window.stqry.storage.get(null, function (data) {
+            assert(data)
+            assert(Object.keys(data).length === 2)
+            assert(data.foo_1 === "bar")
+            assert(data.foo_2 === "bar")
+            // clean up
+            window.stqry.storage.remove(null, done)
+          })
+        })
+      }
+      // should set 2 keys for customKey, get the right 2 keys for customKey
+      function test_setGetAllCustomKey(done) {
+        var customKeyBob = "bobs_dataset"
+        var customKeyAlice = "alices_dataset"
+        window.stqry.storage.set({ "foo_1": "bar_bob", "foo_2": "bar_bob" }, function () {
+          window.stqry.storage.set({ "foo_1": "bar_alice", "foo_2": "bar_alice" }, function () {
+            window.stqry.storage.get(null, function (data) {
+              assert(data)
+              assert(Object.keys(data).length === 2)
+              assert(data.foo_1 === "bar_bob")
+              assert(data.foo_2 === "bar_bob")
+              // clean up
+              window.stqry.storage.remove(null, function () {
+                window.stqry.storage.remove(null, done, customKeyAlice)
+              }, customKeyBob)
+            }, customKeyBob)
+          }, customKeyAlice)
+        }, customKeyBob)
+      }
+      // should set 3 keys, remove 2 keys
+      function test_removeFewKeys(done) {
+        window.stqry.storage.set({ "foo_1": "bar", "foo_2": "bar", "foo_3": "bar" }, function () {
+          window.stqry.storage.remove(["foo_1", "foo_2"], function () {
+            window.stqry.storage.get(["foo_1", "foo_2", "foo_3"], function (data) {
+              assert(data)
+              assert(Object.keys(data).length === 1)
+              assert(data.foo_3 === "bar")
+              // clean up
+              window.stqry.storage.remove(null, done)
+            })
+          })
+        })
+      }
+      // should set 3 keys for customKey, remove the right 2 keys for customKey
+      function test_removeFewKeysCustomKey(done) {
+        var customKeyBob = "bobs_dataset"
+        var customKeyAlice = "alices_dataset"
+        window.stqry.storage.set({ "foo_1": "bar_bob", "foo_2": "bar_bob", "foo_3": "bar_bob" }, function () {
+          window.stqry.storage.set({ "foo_1": "bar_alice", "foo_2": "bar_alice", "foo_3": "bar_alice" }, function () {
+            window.stqry.storage.remove(["foo_1", "foo_2"], function () {
+              window.stqry.storage.get(["foo_1", "foo_2", "foo_3"], function (data) {
+                assert(data)
+                assert(Object.keys(data).length === 1)
+                assert(data.foo_3 === "bar_bob")
+                window.stqry.storage.get(["foo_1", "foo_2", "foo_3"], function (data) {
+                  assert(data)
+                  assert(Object.keys(data).length === 3)
+                  assert(data.foo_1 === "bar_alice")
+                  assert(data.foo_2 === "bar_alice")
+                  assert(data.foo_3 === "bar_alice")
+                  // clean up
+                  window.stqry.storage.remove(null, function () {
+                    window.stqry.storage.remove(null, done, customKeyAlice)
+                  }, customKeyBob)
+                }, customKeyAlice)
+              }, customKeyBob)
+            }, customKeyBob)
+          }, customKeyAlice)
+        }, customKeyBob)
+      }
+      // should set 3 keys, remove all keys
+      function test_removeAllKeys(done) {
+        window.stqry.storage.set({ "foo_1": "bar", "foo_2": "bar", "foo_3": "bar" }, function () {
+          window.stqry.storage.remove(null, function () {
+            window.stqry.storage.get(["foo_1", "foo_2", "foo_3"], function (data) {
+              assert(data)
+              assert(Object.keys(data).length === 0)
+              // finish
+              done()
+            })
+          })
+        })
+      }
+      // should set 3 keys for customKey, remove all keys for the right customKey
+      function test_removeAllKeysCustomKey(done) {
+        var customKeyBob = "bobs_dataset"
+        var customKeyAlice = "alices_dataset"
+        window.stqry.storage.set({ "foo_1": "bar_bob", "foo_2": "bar_bob", "foo_3": "bar_bob" }, function () {
+          window.stqry.storage.set({ "foo_1": "bar_alice", "foo_2": "bar_alice", "foo_3": "bar_alice" }, function () {
+            window.stqry.storage.remove(null, function () {
+              window.stqry.storage.get(["foo_1", "foo_2", "foo_3"], function (data) {
+                assert(data)
+                assert(Object.keys(data).length === 0)
+                window.stqry.storage.get(["foo_1", "foo_2", "foo_3"], function (data) {
+                  assert(data)
+                  assert(Object.keys(data).length === 3)
+                  assert(data.foo_1 === "bar_alice")
+                  assert(data.foo_2 === "bar_alice")
+                  assert(data.foo_3 === "bar_alice")
+                  // clean up
+                  window.stqry.storage.remove(null, done, customKeyAlice)
+                }, customKeyAlice)
+              }, customKeyBob)
+            }, customKeyBob)
+          }, customKeyAlice)
+        }, customKeyBob)
+      }
+
+      try{
+        test_setGet(function () {
+          test_setGetCustomKey(function () {
+            test_setGetAll(function () {
+              test_setGetAllCustomKey(function () {
+                test_removeFewKeys(function () {
+                  test_removeFewKeysCustomKey(function () {
+                    test_removeAllKeys(function () {
+                      test_removeAllKeysCustomKey(function () {})
+                    })
+                  })
+                })
+              })
+            })
+          })
+        })
+      }
+      catch (e) {
+        console.error(e)
+      }
+      // assert(false)
+
+
+    </script>
+  </body>
+</html>
