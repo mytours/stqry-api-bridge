@@ -6,10 +6,26 @@
   <body>
     <script src="./stqry.js"></script>
     <script type="text/javascript">
+      var lastTestFailed = false
       function assert(statement) {
         if (!statement) {
           alert('False assertion')
+          lastTestFailed = true
         }
+      }
+      function finishTest(name, err, data) {
+        if (err) {
+          document.write("" + name + ": " + "<font color='red'>FAILED</font><br/>")
+        }
+        else {
+          if (lastTestFailed) {
+            document.write("" + name + ": " + "<font color='red'>FAILED</font><br/>")
+          }
+          else {
+            document.write("" + name + ": " + "<font color='green'>OK</font><br/>")
+          }
+        }
+        lastTestFailed = false
       }
 
       // should set 1 key, get 1 key
@@ -158,15 +174,24 @@
         }, customKeyBob)
       }
 
-      try{
-        test_setGet(function () {
-          test_setGetCustomKey(function () {
-            test_setGetAll(function () {
-              test_setGetAllCustomKey(function () {
-                test_removeFewKeys(function () {
-                  test_removeFewKeysCustomKey(function () {
-                    test_removeAllKeys(function () {
-                      test_removeAllKeysCustomKey(function () {})
+      try {
+        test_setGet(function (err, data) {
+          finishTest('test_setGet', err, data)
+          test_setGetCustomKey(function (err, data) {
+            finishTest('test_setGetCustomKey', err, data)
+            test_setGetAll(function (err, data) {
+              finishTest('test_setGetAll', err, data)
+              test_setGetAllCustomKey(function (err, data) {
+                finishTest('test_setGetAllCustomKey', err, data)
+                test_removeFewKeys(function (err, data) {
+                  finishTest('test_removeFewKeys', err, data)
+                  test_removeFewKeysCustomKey(function (err, data) {
+                    finishTest('test_removeFewKeysCustomKey', err, data)
+                    test_removeAllKeys(function (err, data) {
+                      finishTest('test_removeAllKeys', err, data)
+                      test_removeAllKeysCustomKey(function (err, data) {
+                        finishTest('test_removeAllKeysCustomKey', err, data)
+                      })
                     })
                   })
                 })
@@ -175,11 +200,10 @@
           })
         })
       }
-      catch (e) {
-        console.error(e)
+      catch (error) {
+        console.error('General test suite error', error)
+        alert('General test suite error:' + error.message)
       }
-      // assert(false)
-
 
     </script>
   </body>
