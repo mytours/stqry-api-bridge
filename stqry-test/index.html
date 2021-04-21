@@ -4,28 +4,49 @@
     <title>STQRY.js test suite</title>
   </head>
   <body>
+    <div id="test-results"></div>
     <script src="./stqry.js"></script>
     <script type="text/javascript">
       var lastTestFailed = false
       function assert(statement) {
         if (!statement) {
-          alert('False assertion')
+          var err = new Error();
           lastTestFailed = true
+          var stack = err.stack.split('\n')
+          stack.shift()
+          document.getElementById('test-results').innerHTML += "<font color='red'>False assertion</font>: <pre>" + stack.join('\n') + "</pre>"
+          // TODO: stop running the test suite
         }
       }
       function finishTest(name, err, data) {
         if (err) {
-          document.write("" + name + ": " + "<font color='red'>FAILED</font><br/>")
+          document.getElementById('test-results').innerHTML += "" + name + ": " + "<font color='red'>FAILED</font> (" + err.message + ")<br/>"
         }
         else {
           if (lastTestFailed) {
-            document.write("" + name + ": " + "<font color='red'>FAILED</font><br/>")
+            document.getElementById('test-results').innerHTML += "" + name + ": " + "<font color='red'>FAILED</font> (False assertion)<br/>"
           }
           else {
-            document.write("" + name + ": " + "<font color='green'>OK</font><br/>")
+            document.getElementById('test-results').innerHTML += "" + name + ": " + "<font color='green'>OK</font><br/>"
           }
         }
         lastTestFailed = false
+      }
+      function runTests(tests) {
+        var test = tests.shift()
+        var timeoutId = setTimeout(function () {
+          finishTest(test.name, new Error('Timed out'), null)
+          if (tests.length > 0) {
+            runTests(tests)
+          }
+        }, 500)
+        test(function (err, data) {
+          clearTimeout(timeoutId)
+          finishTest(test.name, err, data)
+          if (tests.length > 0) {
+            runTests(tests)
+          }
+        })
       }
 
       // should set 1 key, get 1 key
@@ -175,34 +196,21 @@
       }
 
       try {
-        test_setGet(function (err, data) {
-          finishTest('test_setGet', err, data)
-          test_setGetCustomKey(function (err, data) {
-            finishTest('test_setGetCustomKey', err, data)
-            test_setGetAll(function (err, data) {
-              finishTest('test_setGetAll', err, data)
-              test_setGetAllCustomKey(function (err, data) {
-                finishTest('test_setGetAllCustomKey', err, data)
-                test_removeFewKeys(function (err, data) {
-                  finishTest('test_removeFewKeys', err, data)
-                  test_removeFewKeysCustomKey(function (err, data) {
-                    finishTest('test_removeFewKeysCustomKey', err, data)
-                    test_removeAllKeys(function (err, data) {
-                      finishTest('test_removeAllKeys', err, data)
-                      test_removeAllKeysCustomKey(function (err, data) {
-                        finishTest('test_removeAllKeysCustomKey', err, data)
-                      })
-                    })
-                  })
-                })
-              })
-            })
-          })
-        })
+        runTests([
+          test_setGet,
+          test_setGetCustomKey,
+          test_setGetAll,
+          test_setGetAllCustomKey,
+          test_removeFewKeys,
+          test_removeFewKeysCustomKey,
+          test_removeAllKeys,
+          test_removeAllKeysCustomKey,
+        ])
       }
       catch (error) {
         console.error('General test suite error', error)
         alert('General test suite error:' + error.message)
+        document.write('General test suite error:' + error.message)
       }
 
     </script>
