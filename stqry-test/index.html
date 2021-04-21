@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <head>
     <title>STQRY.js test suite</title>
   </head>
@@ -7,43 +8,50 @@
     <div id="test-results"></div>
     <script src="./stqry.js"></script>
     <script type="text/javascript">
-      var lastTestFailed = false
+      var testName = null
+      var testFailed = false
+      var testTimeoutId = null
+      function writeln(line) {
+        document.getElementById('test-results').innerHTML += line + "<br/>"
+      }
       function assert(statement) {
         if (!statement) {
-          var err = new Error();
-          lastTestFailed = true
-          var stack = err.stack.split('\n')
-          stack.shift()
-          document.getElementById('test-results').innerHTML += "<font color='red'>False assertion</font>: <pre>" + stack.join('\n') + "</pre>"
-          // TODO: stop running the test suite
+          testFailed = true
+          if (testTimeoutId) {
+            clearTimeout(testTimeoutId)
+            testTimeoutId = null
+          }
+          reportTest(testName, new Error('False assertion'), null)
+          var stackTrace = (new Error()).stack.split('\n').slice(1).join('\n')
+          writeln("<font color='red'>False assertion</font>: <pre>" + stackTrace + "</pre>")
         }
       }
-      function finishTest(name, err, data) {
+      function reportTest(name, err, data) {
         if (err) {
-          document.getElementById('test-results').innerHTML += "" + name + ": " + "<font color='red'>FAILED</font> (" + err.message + ")<br/>"
+          writeln(name + ": " + "<font color='red'>FAILED</font> (" + err.message + ")")
         }
         else {
-          if (lastTestFailed) {
-            document.getElementById('test-results').innerHTML += "" + name + ": " + "<font color='red'>FAILED</font> (False assertion)<br/>"
-          }
-          else {
-            document.getElementById('test-results').innerHTML += "" + name + ": " + "<font color='green'>OK</font><br/>"
-          }
+          writeln(name + ": " + "<font color='green'>OK</font>")
         }
-        lastTestFailed = false
       }
       function runTests(tests) {
+        if (tests.length === 0) {
+          return
+        }
         var test = tests.shift()
-        var timeoutId = setTimeout(function () {
-          finishTest(test.name, new Error('Timed out'), null)
-          if (tests.length > 0) {
-            runTests(tests)
-          }
-        }, 500)
+        testName = test.name
+        testFailed = false
+        testTimeoutId = setTimeout(function () {
+          reportTest(testName, new Error('Timed out'), null)
+          runTests(tests)
+        }, 1000)
         test(function (err, data) {
-          clearTimeout(timeoutId)
-          finishTest(test.name, err, data)
-          if (tests.length > 0) {
+          if (testTimeoutId) {
+            clearTimeout(testTimeoutId)
+            testTimeoutId = null
+          }
+          if (!testFailed) {
+            reportTest(test.name, err, data)
             runTests(tests)
           }
         })
@@ -209,8 +217,7 @@
       }
       catch (error) {
         console.error('General test suite error', error)
-        alert('General test suite error:' + error.message)
-        document.write('General test suite error:' + error.message)
+        writeln('General test suite error: ' + error.message)
       }
 
     </script>
