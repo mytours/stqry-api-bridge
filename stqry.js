@@ -41,6 +41,7 @@ function callReactNative(action, data, callback) {
     var callbackId = lastReactNativeCallbackId
     var message = {
       action: action,
+      version: "v1",
       data: data,
       callbackId: callbackId,
     }
@@ -51,6 +52,7 @@ function callReactNative(action, data, callback) {
   else {
     var message = {
       action: action,
+      version: "v1",
       data: data,
     }
     window.ReactNativeWebView.postMessage(JSON.stringify(message))
@@ -62,7 +64,8 @@ if (window.stqryRuntime === "ReactNative") {
     var message = JSON.parse(data)
     if (message) {
       var action = message.action
-      if (action === "callback") {
+      var version = message.version
+      if (version === "v1" && action === "callback") {
         var callbackId = message.callbackId
         var args = message.args
         var callback = reactNativeCallbacks[callbackId]
