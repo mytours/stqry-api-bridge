@@ -123,4 +123,52 @@ window.stqry = {
       if (callback) callback()
     }
   },
+  camera: {
+    /**
+      * @param {String} videoTagId - id of video element
+      * @param {function()} callback callback function - calling after link openned
+      */
+    enableBackground: function (videoTagId, callback) {
+      console.warn('Enable camera background', videoTagId)
+
+      // Making `this` available inside nested агтсешщті
+      var _this = this
+      _this._video = document.querySelector('#' + videoTagId);
+
+      setTimeout(function () {
+        if (navigator.mediaDevices.getUserMedia) {
+          navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }})
+            .then(function (stream) {
+              _this._video.srcObject = stream;
+              if (callback) callback()
+            })
+            .catch(function (err0r) {
+              console.log('Something went wrong!', err0r);
+            });
+        }
+      })
+    },
+    /**
+      * @param {function()} callback callback function - calling after link openned
+      */
+    disableBackground: function (callback) {
+      console.warn('Disable camera background')
+      
+      if (this._video) {
+        var stream = this._video.srcObject;
+
+        if (stream) {
+          var tracks = stream.getTracks();
+          
+          for (var i = 0; i < tracks.length; i++) {
+            var track = tracks[i];
+            track.stop();
+          }
+        }
+        
+        this._video.srcObject = null;
+        if (callback) callback()
+      }
+    }
+  },
 }
