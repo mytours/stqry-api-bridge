@@ -63,7 +63,7 @@
     </style>
   </head>
   <body data-scene-width="1024" data-scene-height="1509">
-    <button id="request" type="button">start</button>
+    <button id="request" type="button">Allow Motion permission</button>
 
     <div id="cameraContainer">
       <video autoplay="true" id="videoElement" playsinline></video>
@@ -197,7 +197,9 @@
       window.onload = function () {
         if (window.stqry) {
           // your code here
-          window.stqry.camera.enableBackground('videoElement')
+          window.stqry.camera.enableBackground('videoElement', function () {
+            permission()
+          })
         } else {
           console.error('Loading stqry.js error');
         }
