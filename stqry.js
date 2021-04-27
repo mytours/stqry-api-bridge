@@ -205,12 +205,12 @@ window.stqry = {
   camera: {
     /**
       * @param {String} videoTagId - id of video element
-      * @param {function()} callback callback function - calling after link openned
+      * @param {function(any)} callback callback function - calling after link openned
       */
     enableBackground: function (videoTagId, callback) {
       console.warn('Enable camera background', videoTagId)
 
-      // Making `this` available inside nested агтсешщті
+      // Making `this` available inside nested functions
       var _this = this
       _this._video = document.querySelector('#' + videoTagId);
 
@@ -221,8 +221,8 @@ window.stqry = {
               _this._video.srcObject = stream;
               if (callback) callback()
             })
-            .catch(function (err0r) {
-              console.log('Something went wrong!', err0r);
+            .catch(function (error) {
+              if (callback) callback(error)
             });
         }
       })
