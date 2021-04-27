@@ -81,7 +81,7 @@
         align-items: center;
         justify-content: center;
       }
-      .victoryScreenModal {
+      #victoryScreenModal {
         z-index: 6;
         background-color: rgb(195, 176, 117);
         display: flex;
@@ -91,28 +91,28 @@
         border-radius: 40px;
         border: 1px solid rgb(86, 74, 29);
       }
-      .victoryScreenNugget {
+      #victoryScreenNugget {
         margin: 0;
         padding: 0;
         width: 200px;
         margin: 25px 0;
         margin-top: 6px;
       }
-      .victoryScreenTitle {
+      #victoryScreenTitle {
         margin: 0;
         padding: 0;
         margin: 10px 0;
         color: rgb(86, 74, 29);
         font-weight: 500;
       }
-      .victoryScreenLead {
+      #victoryScreenLead {
         margin: 0;
         padding: 0;
         margin: 10px 0;
         color: rgb(63, 63, 63);
         font-weight: 500;
       }
-      .victoryScreenDesc {
+      #victoryScreenDesc {
         margin: 0;
         padding: 0;
         margin: 20px 0;
@@ -120,7 +120,7 @@
         color: rgb(63, 63, 63);
         font-weight: 300;
       }
-      .victoryScreenClose {
+      #victoryScreenClose {
         border: 1px solid rgb(86, 74, 29);
         align-self: flex-end;
         background: rgb(169 148 48);
@@ -207,12 +207,12 @@
     <script src="../../view360.js"></script>
     <script src="../../stqry.js"></script>
     <div id="victoryScreen" style="display: none;">
-      <div class="victoryScreenModal">
-        <button class="victoryScreenClose" onclick="closeVictoryScreen()">✕</button>
-        <img class="victoryScreenNugget" src="./nugget.gif" />
-        <h1 class="victoryScreenTitle">Congratulations!</h1>
-        <p class="victoryScreenLead">You found the gold nugget!</p>
-        <p class="victoryScreenDesc">Click the "back arrow" to continue</p>
+      <div id="victoryScreenModal" role="dialog" aria-labelledby="victoryScreenTitle" aria-describedby="victoryScreenLead">
+        <button id="victoryScreenClose">✕</button>
+        <img id="victoryScreenNugget" src="./nugget.gif" />
+        <div id="victoryScreenTitle" role="heading" aria-level="1">Congratulations!</div>
+        <div id="victoryScreenLead">You found the gold nugget!</div>
+        <div id="victoryScreenDesc">Click the "back arrow" to continue</div>
       </div>
     </div>
 
@@ -232,6 +232,7 @@
         victoryScreen.style.display = 'none'
       }
 
+      var victoryScreenClose = document.getElementById('victoryScreenClose');
       var motionPermissionScreen = document.getElementById('motionPermissionScreen');
       var motionPermissionScreenRequest = document.getElementById('motionPermissionScreenRequest');
       var victoryScreen = document.getElementById('victoryScreen');
@@ -344,6 +345,7 @@
         }
       }
 
+      victoryScreenClose.addEventListener('click', closeVictoryScreen);
       motionPermissionScreenRequest.addEventListener('click', permission);
 
       window.onload = function () {
