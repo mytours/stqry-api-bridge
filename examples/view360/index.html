@@ -338,6 +338,9 @@
               if (response == 'granted') {
                 start()
               }
+              else {
+                alert('Please restart the app and allow Motion Permission')
+              }
             })
             .catch(console.error);
         } else {
@@ -351,8 +354,13 @@
       window.onload = function () {
         if (window.stqry) {
           // your code here
-          window.stqry.camera.enableBackground('videoElement', function () {
-            permission()
+          window.stqry.camera.enableBackground('videoElement', function (data, error) {
+            if (!error) {
+              permission()
+            }
+            else {
+              alert("Please restart the game and allow Camera Permission")
+            }
           })
         } else {
           console.error('Loading stqry.js error');
