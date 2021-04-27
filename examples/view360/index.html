@@ -216,7 +216,7 @@
       </div>
     </div>
 
-    <div id="motionPermissionScreen">
+    <div id="motionPermissionScreen" style="display: none;">
       <div id="motionPermissionScreenModal" role="dialog" aria-labelledby="motionPermissionScreenTitle" aria-describedby="motionPermissionScreenLead">
         <div id="motionPermissionScreenTitle" role="heading" aria-level="1">Allow Motion Permission</div>
         <div id="motionPermissionScreenLead">The Gold Nugget game requires Motion Permission to play</div>
@@ -356,6 +356,7 @@
           // your code here
           window.stqry.camera.enableBackground('videoElement', function (data, error) {
             if (!error) {
+              motionPermissionScreen.style.display = 'flex'
               permission()
             }
             else {
