@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
     <style>
       html {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         width: 100%;
         height: 100%;
         margin: 0;
@@ -70,6 +71,74 @@
         height: 100%;
         object-fit: cover;
       }
+      #victoryScreen {
+        position: absolute;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      .victoryScreenModal {
+        z-index: 6;
+        background-color: rgb(195, 176, 117);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px;
+        border-radius: 40px;
+        border: 1px solid rgb(86, 74, 29);
+      }
+      .victoryScreenNugget {
+        margin: 0;
+        padding: 0;
+        width: 200px;
+        margin: 25px 0;
+        margin-top: 6px;
+      }
+      .victoryScreenTitle {
+        margin: 0;
+        padding: 0;
+        margin: 10px 0;
+        color: rgb(86, 74, 29);
+        font-weight: 500;
+      }
+      .victoryScreenLead {
+        margin: 0;
+        padding: 0;
+        margin: 10px 0;
+        color: rgb(63, 63, 63);
+        font-weight: 500;
+      }
+      .victoryScreenDesc {
+        margin: 0;
+        padding: 0;
+        margin: 20px 0;
+        margin-bottom: 10px;
+        color: rgb(63, 63, 63);
+        font-weight: 300;
+      }
+      .victoryScreenClose {
+        border: 1px solid rgb(86, 74, 29);
+        align-self: flex-end;
+        background: rgb(169 148 48);
+        width: 35px;
+        height: 35px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 40px;
+        position: relative;
+        top: -25px;
+        right: -25px;
+        color: rgb(86 74 29);
+        font-weight: 300;
+        font-size: 18px;
+        padding: 0;
+        margin: 0;
+      }
     </style>
   </head>
   <body data-scene-width="1024" data-scene-height="1509">
@@ -87,12 +156,25 @@
 
     <script src="../../view360.js"></script>
     <script src="../../stqry.js"></script>
+    <div id="victoryScreen" style="display: none;">
+      <div class="victoryScreenModal">
+        <button class="victoryScreenClose" onclick="closeVictoryScreen()">✕</button>
+        <img class="victoryScreenNugget" src="./nugget.gif" />
+        <h1 class="victoryScreenTitle">Congratulations!</h1>
+        <p class="victoryScreenLead">You found the gold nugget!</p>
+        <p class="victoryScreenDesc">Click the "back arrow" to continue</p>
+      </div>
+    </div>
     <script type="text/javascript">
       function clickOnHotspot() {
-        alert('Congratulations! You found the gold nugget!')
+        victoryScreen.style.display = 'flex'
+      }
+      function closeVictoryScreen() {
+        victoryScreen.style.display = 'none'
       }
 
       const requestButton = document.getElementById('request');
+      var victoryScreen = document.getElementById('victoryScreen');
       var PanoViewer = eg.view360.PanoViewer;
       var container = document.getElementById('myPanoViewer');
       var hotspots = Array.prototype.slice.call(document.querySelectorAll('.hotspot'));
