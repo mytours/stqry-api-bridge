@@ -139,11 +139,61 @@
         padding: 0;
         margin: 0;
       }
+
+      #motionPermissionScreen {
+        position: absolute;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      #motionPermissionScreenModal {
+        z-index: 6;
+        background-color: rgb(195, 176, 117);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border-radius: 40px;
+        border: 1px solid rgb(86, 74, 29);
+        text-align: center;
+        padding: 15px;
+        margin: 15px;
+      }
+      #motionPermissionScreenTitle {
+        margin: 0;
+        padding: 0;
+        margin: 10px 0;
+        color: rgb(86, 74, 29);
+        font-weight: 500;
+        font-size: 26px;
+      }
+      #motionPermissionScreenLead {
+        margin: 0;
+        padding: 0;
+        margin: 20px 0;
+        color: rgb(63, 63, 63);
+        font-weight: 500;
+      }
+      #motionPermissionScreenRequest {
+        border: 1px solid rgb(86, 74, 29);
+        background: rgb(169 148 48);
+        display: flex;
+        padding: 5px 15px;
+        justify-content: center;
+        align-items: center;
+        border-radius: 40px;
+        color: rgb(86 74 29);
+        font-weight: 300;
+        font-size: 18px;
+        margin: 10px 0;
+        margin-bottom: 0;
+      }
     </style>
   </head>
   <body data-scene-width="1024" data-scene-height="1509">
-    <button id="request" type="button">Allow Motion permission</button>
-
     <div id="cameraContainer">
       <video autoplay="true" id="videoElement" playsinline></video>
     </div>
@@ -165,6 +215,15 @@
         <p class="victoryScreenDesc">Click the "back arrow" to continue</p>
       </div>
     </div>
+
+    <div id="motionPermissionScreen">
+      <div id="motionPermissionScreenModal" role="dialog" aria-labelledby="motionPermissionScreenTitle" aria-describedby="motionPermissionScreenLead">
+        <div id="motionPermissionScreenTitle" role="heading" aria-level="1">Allow Motion Permission</div>
+        <div id="motionPermissionScreenLead">The Gold Nugget game requires Motion Permission to play</div>
+        <button id="motionPermissionScreenRequest" type="button">Allow</button>
+      </div>
+    </div>
+
     <script type="text/javascript">
       function clickOnHotspot() {
         victoryScreen.style.display = 'flex'
@@ -173,7 +232,8 @@
         victoryScreen.style.display = 'none'
       }
 
-      const requestButton = document.getElementById('request');
+      var motionPermissionScreen = document.getElementById('motionPermissionScreen');
+      var motionPermissionScreenRequest = document.getElementById('motionPermissionScreenRequest');
       var victoryScreen = document.getElementById('victoryScreen');
       var PanoViewer = eg.view360.PanoViewer;
       var container = document.getElementById('myPanoViewer');
@@ -253,7 +313,7 @@
       }
 
       function start() {
-        requestButton.style.display = 'none';
+        motionPermissionScreen.style.display = 'none';
         container.style.display = 'block';
 
         var panoViewer = new PanoViewer(container, {
@@ -284,7 +344,7 @@
         }
       }
 
-      requestButton.addEventListener('click', permission);
+      motionPermissionScreenRequest.addEventListener('click', permission);
 
       window.onload = function () {
         if (window.stqry) {
