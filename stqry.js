@@ -59,7 +59,9 @@ function callReactNative(action, data, callback) {
   }
 }
 if (window.stqryRuntime === "ReactNative") {
-  window.addEventListener('message', function(event) {
+  window.addEventListener('message', onMessage)
+  document.addEventListener('message', onMessage)
+  function onMessage(event) {
     var data = event.data
     var message = JSON.parse(data)
     if (message) {
@@ -81,7 +83,7 @@ if (window.stqryRuntime === "ReactNative") {
     else {
       // malformed message, ignore
     }
-  })
+  }
 }
 
 
