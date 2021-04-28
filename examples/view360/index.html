@@ -355,7 +355,7 @@
       window.onload = function () {
         if (window.stqry) {
           // your code here
-          window.stqry.camera.enableBackground('videoElement', function (data, error) {
+          window.stqry.camera.enableBackground('videoElement', function (error) {
             if (!error) {
               motionPermissionScreen.style.display = 'flex'
               permission()
