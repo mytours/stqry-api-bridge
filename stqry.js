@@ -264,7 +264,7 @@ window.stqry = {
       }
 
       if (window.stqryRuntime === "ReactNative") {
-        callReactNative("camera.requestCameraPermission", {}, function(permissionStatus, error) {
+        callApp("camera.requestCameraPermission", {}, function(permissionStatus, error) {
           if (error) console.error('camera.requestCameraPermission error', error)
           if (permissionStatus !== "granted" && permissionStatus !== "bypassed") {
             if (callback) callback(new Error("Camera permission is not granted or bypassed. Camera permission is '"+permissionStatus+"' instead."))
