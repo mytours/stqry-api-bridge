@@ -93,7 +93,7 @@ window.addEventListener('message', function(event) {
 })
 
 if (!window.stqryRuntime) {
-  window.stqryRuntime = 'testing'
+  window.stqryRuntime = 'NoRuntime'
 }
 
 window.stqry = {
@@ -116,7 +116,7 @@ window.stqry = {
     set: function (changeset, callback, customKey) {
       var storageKey = customKey || STORAGE_KEY
       
-      if (window.stqryRuntime === 'testing') {
+      if (window.stqryRuntime === 'NoRuntime') {
         var storedData = getStoredData(storageKey)
         var value = Object.assign(storedData, changeset)
         setStoredData(storageKey, value)
@@ -137,7 +137,7 @@ window.stqry = {
       */
     get: function (keys, callback, customKey) {
       var storageKey = customKey || STORAGE_KEY
-      if (window.stqryRuntime === 'testing') {
+      if (window.stqryRuntime === 'NoRuntime') {
         var storedData = getStoredData(storageKey)
         
         if (keys && Array.isArray(keys)) {
@@ -166,7 +166,7 @@ window.stqry = {
       */
     remove: function (keys, callback, customKey) {
       var storageKey = customKey || STORAGE_KEY
-      if (window.stqryRuntime === 'testing') {
+      if (window.stqryRuntime === 'NoRuntime') {
         if (keys && Array.isArray(keys)) {
           var storedData = getStoredData(storageKey)
           
@@ -204,7 +204,7 @@ window.stqry = {
       * @param {function()} callback callback function - calling after link openned
       */
     openInternal: function (data, callback) {
-      if (window.stqryRuntime === 'testing') {
+      if (window.stqryRuntime === 'NoRuntime') {
         console.warn('Opening internal link: [id] [type] [subtype]', data)
         if (callback) callback()
         return
@@ -218,7 +218,7 @@ window.stqry = {
       * @param {function()} callback callback function - calling after link openned
       */
     openExternal: function (link, callback) {
-      if (window.stqryRuntime === 'testing') {
+      if (window.stqryRuntime === 'NoRuntime') {
         console.warn('Opening external link: ', link, window)
         if (callback) callback()
         return
