@@ -68,29 +68,39 @@ function callApp(action, data, callback) {
   }
 }
 
-window.addEventListener('message', function(event) {
-  var data = event.data
-  var message = JSON.parse(data)
-  if (message) {
-    var action = message.action
-    var version = message.version
-    if (version === 'v1' && action === 'callback') {
-      var callbackId = message.callbackId
-      var args = message.args
-      var callback = appCallbacks[callbackId]
-      if (callback) {
-        callback.apply(null, args)
-        delete appCallbacks[callbackId] // can only call back once
-      } else {
-        // callback is not set up at the moment
-      }
-    } else if (version === 'v1' && action === 'execute' && message.function) {
-      eval(message.function)
+window.addEventListener('message', onMessage)
+document.addEventListener('message', onMessage)
+
+function onMessage(event) {
+  var message
+  try {
+    message = JSON.parse(event.data)
+  } catch (error) {
+    // here can be any extension, so the error isn't logged
+  }
+  
+  if (!message) {
+    return
+  }
+
+  var action = message.action
+  var version = message.version
+  if (version === 'v1' && action === 'callback') {
+    var callbackId = message.callbackId
+    var args = message.args
+    var callback = appCallbacks[callbackId]
+    if (callback) {
+      callback.apply(null, args)
+      delete appCallbacks[callbackId] // can only call back once
+    } else {
+      // callback is not set up at the moment
     }
+  } else if (version === 'v1' && action === 'execute' && message.function) {
+    eval(message.function)
   } else {
     // malformed message, ignore
   }
-})
+}
 
 if (!window.stqryRuntime) {
   window.stqryRuntime = 'NoRuntime'
@@ -228,6 +238,70 @@ window.stqry = {
       if (callback) callback()
     }
   },
+  camera: {
+    /**
+      * @param {String} videoTagId - id of video element
+      * @param {function(any)} callback callback function - calling after link openned
+      */
+    enableBackground: function (videoTagId, callback) {
+      console.warn('Enable camera background', videoTagId)
+
+      // Making `this` available inside nested functions
+      var _this = this
+      _this._video = document.querySelector('#' + videoTagId);
+
+      function enableBackgroundInternal() {
+        if (navigator.mediaDevices.getUserMedia) {
+          navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }})
+            .then(function (stream) {
+              _this._video.srcObject = stream;
+              if (callback) callback()
+            })
+            .catch(function (error) {
+              if (callback) callback(error)
+            });
+        }
+      }
+
+      if (window.stqryRuntime === "ReactNative") {
+        callReactNative("camera.requestCameraPermission", {}, function(permissionStatus, error) {
+          if (error) console.error('camera.requestCameraPermission error', error)
+          if (permissionStatus !== "granted" && permissionStatus !== "bypassed") {
+            if (callback) callback(new Error("Camera permission is not granted or bypassed. Camera permission is '"+permissionStatus+"' instead."))
+            return
+          }
+          enableBackgroundInternal();
+        })
+        return
+      }
+
+      setTimeout(function () {
+        enableBackgroundInternal();
+      });
+    },
+    /**
+      * @param {function()} callback callback function - calling after link openned
+      */
+    disableBackground: function (callback) {
+      console.warn('Disable camera background')
+      
+      if (this._video) {
+        var stream = this._video.srcObject;
+
+        if (stream) {
+          var tracks = stream.getTracks();
+          
+          for (var i = 0; i < tracks.length; i++) {
+            var track = tracks[i];
+            track.stop();
+          }
+        }
+        
+        this._video.srcObject = null;
+        if (callback) callback()
+      }
+    }
+  },
 }
 
 // Check if it's self page or react native webview
@@ -236,8 +310,11 @@ if (window.self === window.top || window.stqryRuntime === 'ReactNative') {
   window.stqry.loading = false
 }
 
-// Check if stqry script is fully loaded
-// Use that callback in frontend
+/**
+  * Check if stqry script is fully loaded
+  * Use that callback in frontend
+  * @param {function()} callback callback function - calling after link openned
+  */
 window.stqryOnLoad = function (successCallback) {
   var attempt = 0
   var loadingInterval = setInterval(function () {
@@ -252,5 +329,5 @@ window.stqryOnLoad = function (successCallback) {
     } else {
       attempt++;
     }
-  }, 100)
+  }, 100);
 }

@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+    <style>
+      html {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        position: relative;
+      }
+      * {
+        user-select: none;
+        -webkit-user-select: none;
+        outline: none;
+      }
+      #nugget {
+        width: 100px;
+      }
+
+      #myPanoViewer {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: none;
+        z-index: 4;
+      }
+
+      .hotspot {
+        position: absolute;
+        top: -1000;
+        left: -1000;
+        z-index: 5;
+      }
+
+      .nugget {
+        width: 200px;
+      }
+
+      #request {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+
+        -webkit-transform: translate(-50%, -50%);
+        -moz-transform: translate(-50%, -50%);
+        -o-transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%);
+        z-index: 3;
+      }
+
+      #cameraContainer {
+        margin: 0px;
+        width: 100%;
+        height: 100%;
+      }
+      #videoElement {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      #victoryScreen {
+        position: absolute;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      #victoryScreenModal {
+        z-index: 6;
+        background-color: rgb(195, 176, 117);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px;
+        border-radius: 40px;
+        border: 1px solid rgb(86, 74, 29);
+      }
+      #victoryScreenNugget {
+        margin: 0;
+        padding: 0;
+        width: 200px;
+        margin: 25px 0;
+        margin-top: 6px;
+      }
+      #victoryScreenTitle {
+        margin: 0;
+        padding: 0;
+        margin: 10px 0;
+        color: rgb(86, 74, 29);
+        font-weight: 500;
+        font-size: 26px;
+      }
+      #victoryScreenLead {
+        margin: 0;
+        padding: 0;
+        margin: 10px 0;
+        color: rgb(63, 63, 63);
+        font-weight: 500;
+      }
+      #victoryScreenDesc {
+        margin: 0;
+        padding: 0;
+        margin: 20px 0;
+        margin-bottom: 10px;
+        color: rgb(63, 63, 63);
+        font-weight: 300;
+      }
+      #victoryScreenClose {
+        border: 1px solid rgb(86, 74, 29);
+        align-self: flex-end;
+        background: rgb(169 148 48);
+        width: 35px;
+        height: 35px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 40px;
+        position: relative;
+        top: -25px;
+        right: -25px;
+        color: rgb(86 74 29);
+        font-weight: 300;
+        font-size: 18px;
+        padding: 0;
+        margin: 0;
+      }
+
+      #motionPermissionScreen {
+        position: absolute;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      #motionPermissionScreenModal {
+        z-index: 6;
+        background-color: rgb(195, 176, 117);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border-radius: 40px;
+        border: 1px solid rgb(86, 74, 29);
+        text-align: center;
+        padding: 15px;
+        margin: 15px;
+      }
+      #motionPermissionScreenTitle {
+        margin: 0;
+        padding: 0;
+        margin: 10px 0;
+        color: rgb(86, 74, 29);
+        font-weight: 500;
+        font-size: 26px;
+      }
+      #motionPermissionScreenLead {
+        margin: 0;
+        padding: 0;
+        margin: 20px 0;
+        color: rgb(63, 63, 63);
+        font-weight: 500;
+      }
+      #motionPermissionScreenRequest {
+        border: 1px solid rgb(86, 74, 29);
+        background: rgb(169 148 48);
+        display: flex;
+        padding: 5px 15px;
+        justify-content: center;
+        align-items: center;
+        border-radius: 40px;
+        color: rgb(86 74 29);
+        font-weight: 300;
+        font-size: 18px;
+        margin: 10px 0;
+        margin-bottom: 0;
+      }
+    </style>
+  </head>
+  <body data-scene-width="1024" data-scene-height="1509">
+    <div id="cameraContainer">
+      <video autoplay="true" id="videoElement" playsinline></video>
+    </div>
+
+    <div id="myPanoViewer">
+      <div class="hotspot" data-yaw="30" data-pitch="20" onclick="clickOnHotspot()">
+        <img class="nugget" src="./nugget.gif" />
+      </div>
+    </div>
+
+    <script src="view360.js"></script>
+    <script src="stqry.js"></script>
+    <div id="victoryScreen" style="display: none;">
+      <div id="victoryScreenModal" role="dialog" aria-labelledby="victoryScreenTitle" aria-describedby="victoryScreenLead">
+        <button id="victoryScreenClose">✕</button>
+        <img id="victoryScreenNugget" src="./nugget.gif" />
+        <div id="victoryScreenTitle" role="heading" aria-level="1">Congratulations!</div>
+        <div id="victoryScreenLead">You found the gold nugget!</div>
+        <div id="victoryScreenDesc">Click the "back arrow" to continue</div>
+      </div>
+    </div>
+
+    <div id="motionPermissionScreen" style="display: none;">
+      <div id="motionPermissionScreenModal" role="dialog" aria-labelledby="motionPermissionScreenTitle" aria-describedby="motionPermissionScreenLead">
+        <div id="motionPermissionScreenTitle" role="heading" aria-level="1">Allow Motion Permission</div>
+        <div id="motionPermissionScreenLead">The Gold Nugget game requires Motion Permission to play</div>
+        <button id="motionPermissionScreenRequest" type="button">Allow</button>
+      </div>
+    </div>
+
+    <script type="text/javascript">
+      function clickOnHotspot() {
+        victoryScreen.style.display = 'flex'
+      }
+      function closeVictoryScreen() {
+        victoryScreen.style.display = 'none'
+      }
+
+      var victoryScreenClose = document.getElementById('victoryScreenClose');
+      var motionPermissionScreen = document.getElementById('motionPermissionScreen');
+      var motionPermissionScreenRequest = document.getElementById('motionPermissionScreenRequest');
+      var victoryScreen = document.getElementById('victoryScreen');
+      var PanoViewer = eg.view360.PanoViewer;
+      var container = document.getElementById('myPanoViewer');
+      var hotspots = Array.prototype.slice.call(document.querySelectorAll('.hotspot'));
+      
+      var video = document.querySelector("#videoElement");
+
+      function toRadian(deg) {
+        return deg * Math.PI / 180;
+      }
+
+      function getHFov(fov) {
+        var rect = container.getBoundingClientRect();
+        var width = rect.width;
+        var height = rect.height;
+        return Math.atan(width / height * Math.tan(toRadian(fov) / 2)) / Math.PI * 360;
+      }
+
+      function rotate(point, deg) {
+        var rad = toRadian(deg);
+        var cos = Math.cos(rad);
+        var sin = Math.sin(rad);
+
+        return [cos * point[0] - sin * point[1], sin * point[0] + cos * point[1]];
+      }
+
+      function setHotspotOffset(hotspot, viewer) {
+        var oyaw = viewer.getYaw();
+        var opitch = viewer.getPitch();
+        var yaw = parseFloat(hotspot.getAttribute('data-yaw'));
+        var pitch = parseFloat(hotspot.getAttribute('data-pitch'));
+        var deltaYaw = yaw - oyaw;
+        var deltaPitch = pitch - opitch;
+
+        if (deltaYaw < -180) {
+          deltaYaw += 360;
+        } else if (deltaYaw > 180) {
+          deltaYaw -= 360;
+        }
+        if (Math.abs(deltaYaw) > 90) {
+          hotspot.style.transform = 'translate(-200px, 0px)';
+          return;
+        }
+        var radYaw = toRadian(deltaYaw);
+        var radPitch = toRadian(deltaPitch);
+
+        var fov = viewer.getFov();
+        var hfov = getHFov(fov);
+
+        var rx = Math.tan(toRadian(hfov) / 2);
+        var ry = Math.tan(toRadian(fov) / 2);
+
+
+        var point = [
+          Math.tan(-radYaw) / rx,
+          Math.tan(-radPitch) / ry,
+        ];
+
+        // Image rotation compensation
+        // The original image is about 10 degrees tilted.
+        point = point.map(function (p) {
+          return p * Math.cos(15 / 180 * Math.PI);
+        });
+        point[1] = rotate(point, deltaYaw > 0 ? -10 : 10)[1];
+
+        // point[0] /= 1.05;
+        var left = viewer._width / 2 + point[0] * viewer._width / 2;
+        var top = viewer._height / 2 + point[1] * viewer._height / 2;
+
+        hotspot.style.transform = 'translate(' + left + 'px, ' + top + 'px) translate(-50%, -50%)';
+      }
+
+      function setHotspotOffsets(viewer) {
+        hotspots.forEach(function (hotspot) {
+          setHotspotOffset(hotspot, viewer);
+        });
+      }
+
+      function start() {
+        motionPermissionScreen.style.display = 'none';
+        container.style.display = 'block';
+
+        var panoViewer = new PanoViewer(container, {
+          useZoom: false,
+          projectionType: eg.view360.PanoViewer.PROJECTION_TYPE.CUBEMAP,
+        }).on('ready', function (e) {
+          setHotspotOffsets(panoViewer);
+        }).on('viewChange', function (e) {
+          setHotspotOffsets(panoViewer);
+        }).on('error', e => {
+          console.error(e);
+        });
+
+        panoViewer.setTouchDirection(eg.view360.PanoViewer.TOUCH_DIRECTION.NONE);
+      }
+
+      function permission() {
+        if (typeof (DeviceMotionEvent) !== 'undefined') {
+          if (typeof (DeviceMotionEvent.requestPermission) === 'function') {
+            DeviceMotionEvent.requestPermission()
+            .then(response => {
+              if (response == 'granted') {
+                start()
+              }
+              else {
+                alert('Please restart the app and allow Motion Permission')
+              }
+            })
+            .catch(console.error);
+          }
+          else {
+            start()
+          }
+        } else {
+          alert('DeviceMotionEvent is not defined');
+        }
+      }
+
+      victoryScreenClose.addEventListener('click', closeVictoryScreen);
+      motionPermissionScreenRequest.addEventListener('click', permission);
+
+      window.stqryOnLoad(function () {
+        window.stqry.camera.enableBackground('videoElement', function (error) {
+          if (!error) {
+            motionPermissionScreen.style.display = 'flex'
+            permission()
+          } else {
+            console.log('error', error)
+            alert("Please restart the game and allow Camera Permission")
+          }
+        })
+      })
+    </script>
+  </body>
+</html>

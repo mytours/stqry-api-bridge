@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+    <style>
+      html, body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        position: relative;
+      }
+      * {
+        user-select: none;
+      }
+      .scene-cover {
+        position: absolute;
+      }
+      .zone {
+        display: none;
+      }
+      .zone.reveleaed {
+        display: block;
+      }
+      .zone-click {
+        //border: 1px solid red;
+        position: absolute;
+      }
+      .zone-click.reveleaed {
+        //display: none;
+      }
+      #reset {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        width: 120px;
+        height: 40px;
+        color: #C7EEE9;
+        background-color: #24BAAE;
+        border: 2px solid #25A4B0;
+        font-size: 20px;
+        outline: none;
+      }
+      #reset:active {
+        opacity: 0.6;
+      }
+      #overview {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        width: 200px;
+        height: 40px;
+        color: #C7EEE9;
+        background-color: #24BAAE;
+        border: 2px solid #25A4B0;
+        font-size: 20px;
+        outline: none;
+      }
+      #overview:active {
+        opacity: 0.6;
+      }
+    </style>
+  </head>
+  <body data-scene-width="1024" data-scene-height="1509">
+    <img id="background" class="scene-cover" src="background.jpg" />
+    <img id="zone-1" class="zone scene-cover" src="zone-1.png" />
+    <img id="zone-2" class="zone scene-cover" src="zone-2.png" />
+    <img id="zone-3" class="zone scene-cover" src="zone-3.png" />
+    <img id="zone-4" class="zone scene-cover" src="zone-4.png" />
+    <img id="zone-5" class="zone scene-cover" src="zone-5.png" />
+    <img id="zone-6" class="zone scene-cover" src="zone-6.png" />
+    <img id="zone-7" class="zone scene-cover" src="zone-7.png" />
+    <div id="click-zone-1" class="zone-click" data-width="300" data-height="180" data-left="86" data-top="42" data-type="screen" data-id="26570" data-subtype="story"></div>
+    <div id="click-zone-2" class="zone-click" data-width="300" data-height="348" data-left="0" data-top="512" data-type="screen" data-id="26671" data-subtype="story"></div>
+    <div id="click-zone-3" class="zone-click" data-width="256" data-height="320" data-left="130" data-top="878" data-type="screen" data-id="26460" data-subtype="story"></div>
+    <div id="click-zone-4" class="zone-click" data-width="344" data-height="257" data-left="658" data-top="15" data-type="screen" data-id="26471" data-subtype="story"></div>
+    <div id="click-zone-5" class="zone-click" data-width="163" data-height="185" data-left="487" data-top="475" data-type="screen" data-id="26574" data-subtype="story"></div>
+    <div id="click-zone-6" class="zone-click" data-width="164" data-height="186" data-left="723" data-top="686" data-type="screen" data-id="26437" data-subtype="story"></div>
+    <div id="click-zone-7" class="zone-click" data-width="550" data-height="351" data-left="433" data-top="1154" data-type="screen" data-id="26348" data-subtype="story"></div>
+
+    <button type="button" id="reset">Reset</button>
+    <button type="button" id="overview">Play Next Game</button>
+
+    <script src="./stqry.js"></script>
+    <script type="text/javascript">
+      function getAllIds () {
+        var zoneEls = document.querySelectorAll('.zone')
+        var ids = []
+        for (var i = 0; i < zoneEls.length; i++) {
+          ids.push(zoneEls[i].getAttribute('id'))
+        }
+        return ids
+      }
+
+      function resizeScene () {
+        var windowSz = {
+          width: document.documentElement.clientWidth,
+          height: document.documentElement.clientHeight
+        }
+        var sceneSz = {
+          width: parseInt(document.body.getAttribute('data-scene-width')),
+          height: parseInt(document.body.getAttribute('data-scene-height'))
+        }
+        var scale = Math.min(
+          windowSz.height / sceneSz.height,
+          windowSz.width / sceneSz.width
+        )
+
+        // Resize the cover elements
+        var sceneTargetCoords = {
+          width: sceneSz.width * scale,
+          height: sceneSz.height * scale,
+          top: undefined,
+          left: undefined
+        }
+        sceneTargetCoords.top = (windowSz.height - sceneTargetCoords.height) / 2
+        sceneTargetCoords.left = (windowSz.width - sceneTargetCoords.width) / 2
+        var sceneCoverEls = document.querySelectorAll('.scene-cover')
+        for (var i = 0; i < sceneCoverEls.length; i++) {
+          sceneCoverEls[i].style.width = sceneTargetCoords.width + 'px'
+          sceneCoverEls[i].style.height = sceneTargetCoords.height + 'px'
+          sceneCoverEls[i].style.top = sceneTargetCoords.top + 'px'
+          sceneCoverEls[i].style.left = sceneTargetCoords.left + 'px'
+        }
+
+        // Resize the zones
+        var zoneEls = document.querySelectorAll('.zone-click')
+        for (var i = 0; i < zoneEls.length; i++) {
+          var el = zoneEls[i]
+          var dx = {
+            width: parseInt(el.getAttribute('data-width')),
+            height: parseInt(el.getAttribute('data-height')),
+            top: parseInt(el.getAttribute('data-top')),
+            left: parseInt(el.getAttribute('data-left'))
+          }
+          el.style.width = (dx.width * scale) + 'px'
+          el.style.height = (dx.height * scale) + 'px'
+          el.style.top = ((dx.top * scale) + sceneTargetCoords.top) + 'px'
+          el.style.left = ((dx.left * scale) + sceneTargetCoords.left) + 'px'
+        }
+      }
+      resizeScene()
+      window.addEventListener('resize', resizeScene, false)
+
+      function updateZones () {
+        var ids = getAllIds()
+        window.stqry.storage.get(ids, function (data) {
+          for (var i = 0; i < ids.length; i++) {
+            var id = ids[i]
+            var zone = document.getElementById(id)
+            var zoneClick = document.getElementById('click-' + id)
+
+            
+            if (zone && zoneClick) {
+              if (data[id]) {
+                zone.classList.add('reveleaed')
+                zoneClick.classList.add('reveleaed')
+              } else {
+                zone.classList.remove('reveleaed')
+                zoneClick.classList.remove('reveleaed')
+              }
+            }
+          }
+        })
+      }
+
+      var zoneEls = document.querySelectorAll('.zone-click')
+      for (var i = 0; i < zoneEls.length; i++) {
+        var el = zoneEls[i]
+        el.addEventListener('click', function (evt) {
+          var id = this.getAttribute('id').replace('click-', '')
+          var dataId = this.getAttribute('data-id')
+          var dataType = this.getAttribute('data-type')
+          var dataSubtype = this.getAttribute('data-subtype')
+          var dataLink = this.getAttribute('data-link')
+          evt.preventDefault()
+          var changeset = {}
+          changeset[id] = true
+
+          window.stqry.storage.set(changeset, function () {
+            updateZones()
+            if (dataLink) {
+              window.stqry.linking.openExternal(dataLink)
+            } else {
+              window.stqry.linking.openInternal({ id: dataId, type: dataType, subtype: dataSubtype })
+            }
+          })
+
+        }, false)
+      }
+
+      document.getElementById('reset').addEventListener('click', function (evt) {
+        evt.preventDefault()
+        if (window.confirm('Are you sure?')) {
+          var ids = getAllIds()
+          window.stqry.storage.remove(ids, function () {
+            updateZones()
+          })
+        }
+      }, false)
+      document.getElementById('overview').addEventListener('click', function (evt) {
+        evt.preventDefault()
+        window.stqry.linking.openInternal({ type: 'screen', id: 49834, subtype: "story" })
+      }, false)
+
+      window.stqryOnLoad(function () {
+        updateZones();
+      });
+    </script>
+  </body>
+</html>
