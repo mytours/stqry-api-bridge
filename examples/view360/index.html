@@ -357,22 +357,17 @@
       victoryScreenClose.addEventListener('click', closeVictoryScreen);
       motionPermissionScreenRequest.addEventListener('click', permission);
 
-      window.onload = function () {
-        if (window.stqry) {
-          // your code here
-          window.stqry.camera.enableBackground('videoElement', function (error) {
-            if (!error) {
-              motionPermissionScreen.style.display = 'flex'
-              permission()
-            }
-            else {
-              alert("Please restart the game and allow Camera Permission")
-            }
-          })
-        } else {
-          console.error('Loading stqry.js error');
-        }
-      }
+      window.stqryOnLoad(function () {
+        window.stqry.camera.enableBackground('videoElement', function (error) {
+          if (!error) {
+            motionPermissionScreen.style.display = 'flex'
+            permission()
+          } else {
+            console.log('error', error)
+            alert("Please restart the game and allow Camera Permission")
+          }
+        })
+      })
     </script>
   </body>
 </html>
