@@ -250,7 +250,7 @@ window.stqry = {
       var _this = this
       _this._video = document.querySelector('#' + videoTagId);
 
-      function requestCameraPermission() {
+      function enableBackgroundInternal() {
         if (navigator.mediaDevices.getUserMedia) {
           navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }})
             .then(function (stream) {
@@ -270,13 +270,13 @@ window.stqry = {
             if (callback) callback(new Error("Camera permission is not granted or bypassed. Camera permission is '"+permissionStatus+"' instead."))
             return
           }
-          requestCameraPermission();
+          enableBackgroundInternal();
         })
         return
       }
 
       setTimeout(function () {
-        requestCameraPermission();
+        enableBackgroundInternal();
       });
     },
     /**
