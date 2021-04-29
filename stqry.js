@@ -29,65 +29,87 @@ function getStoredData(key) {
   }
 }
 
-var reactNativeCallbacks = {}
-var lastReactNativeCallbackId = 0;
+var appCallbacks = {}
+var lastAppCallbackId = 0;
 /**
-  * @param {string} action action to take in react native world
-  * @param {any} data data to send to react native world
+  * @param {string} action action to take in the parent app
+  * @param {any} data data to send to the parent app
   * @param {function} callback callback for when the action is finished
   */
-function callReactNative(action, data, callback) {
+function callApp(action, data, callback) {
   if (callback) {
-    var callbackId = lastReactNativeCallbackId
+    var callbackId = lastAppCallbackId
     var message = {
       action: action,
-      version: "v1",
+      version: 'v1',
       data: data,
       callbackId: callbackId,
     }
-    reactNativeCallbacks[callbackId] = callback
-    lastReactNativeCallbackId++
-    window.ReactNativeWebView.postMessage(JSON.stringify(message))
-  }
-  else {
+    appCallbacks[callbackId] = callback
+    lastAppCallbackId++
+
+    if (window.stqryRuntime === 'ReactNative') {
+      window.ReactNativeWebView.postMessage(JSON.stringify(message))
+    } else if (window.stqryRuntime === 'MobileWeb') {
+      window.parent.postMessage(JSON.stringify(message), '*')
+    }
+  } else {
     var message = {
       action: action,
-      version: "v1",
+      version: 'v1',
       data: data,
     }
-    window.ReactNativeWebView.postMessage(JSON.stringify(message))
+
+    if (window.stqryRuntime === 'ReactNative') {
+      window.ReactNativeWebView.postMessage(JSON.stringify(message))
+    } else if (window.stqryRuntime === 'MobileWeb') {
+      window.parent.postMessage(JSON.stringify(message), '*')
+    }
   }
 }
-if (window.stqryRuntime === "ReactNative") {
-  window.addEventListener('message', onMessage)
-  document.addEventListener('message', onMessage)
-  function onMessage(event) {
-    var data = event.data
-    var message = JSON.parse(data)
-    if (message) {
-      var action = message.action
-      var version = message.version
-      if (version === "v1" && action === "callback") {
-        var callbackId = message.callbackId
-        var args = message.args
-        var callback = reactNativeCallbacks[callbackId]
-        if (callback) {
-          callback.apply(null, args)
-          delete reactNativeCallbacks[callbackId] // can only call back once
-        }
-        else {
-          // callback is not set up at the moment
-        }
+
+window.addEventListener('message', onMessage)
+document.addEventListener('message', onMessage)
+
+function onMessage(event) {
+  var data = event.data
+  var message = JSON.parse(data)
+  if (message) {
+    var action = message.action
+    var version = message.version
+    if (version === 'v1' && action === 'callback') {
+      var callbackId = message.callbackId
+      var args = message.args
+      var callback = appCallbacks[callbackId]
+      if (callback) {
+        callback.apply(null, args)
+        delete appCallbacks[callbackId] // can only call back once
+      } else {
+        // callback is not set up at the moment
       }
-    }
-    else {
+    } else if (version === 'v1' && action === 'execute' && message.function) {
+      eval(message.function)
+    } else {
       // malformed message, ignore
     }
   }
 }
 
+if (!window.stqryRuntime) {
+  window.stqryRuntime = 'NoRuntime'
+}
 
 window.stqry = {
+  /**
+    * loading parameter show state stqry scripts
+    */
+  loading: true,
+  /**
+    * Call init function when stqry can't load oneself
+    */
+  init: function () {
+    this.loading = false;
+  },
   storage: {
     /**
       * @param {Object.<string, any>} changeset object - pair of key value
@@ -97,18 +119,19 @@ window.stqry = {
     set: function (changeset, callback, customKey) {
       var storageKey = customKey || STORAGE_KEY
       
-      if (window.stqryRuntime === "ReactNative") {
-        callReactNative("storage.set", { changeset: changeset, storageKey: storageKey }, callback)
+      if (window.stqryRuntime === 'NoRuntime') {
+        var storedData = getStoredData(storageKey)
+        var value = Object.assign(storedData, changeset)
+        setStoredData(storageKey, value)
+        
+        console.warn('Saving into storage:')
+        console.log('[key]', storageKey)
+        console.log('[value]', value)
+        callback()
         return
       }
-      var storedData = getStoredData(storageKey)
-      var value = Object.assign(storedData, changeset)
-      setStoredData(storageKey, value)
-      
-      console.warn('Saving into storage:')
-      console.log('[key]', storageKey)
-      console.log('[value]', value)
-      callback()
+
+      callApp('storage.set', { changeset: changeset, storageKey: storageKey }, callback)
     },
     /**
       * @param {Array<string>} [keys] array of keys
@@ -117,26 +140,27 @@ window.stqry = {
       */
     get: function (keys, callback, customKey) {
       var storageKey = customKey || STORAGE_KEY
-      if (window.stqryRuntime === "ReactNative") {
-        callReactNative("storage.get", { keys: keys, storageKey: storageKey }, callback)
+      if (window.stqryRuntime === 'NoRuntime') {
+        var storedData = getStoredData(storageKey)
+        
+        if (keys && Array.isArray(keys)) {
+          Object.keys(storedData).forEach(key => {
+            if (!keys.includes(key)) {
+              delete storedData[key]
+            }
+          })
+        }
+
+        console.warn('Getting from storage:')
+        console.log('[object keys]', keys)
+        console.log('[key]', storageKey)
+        console.log('[value]', storedData)
+
+        callback(storedData)
         return
       }
-      var storedData = getStoredData(storageKey)
-      
-      if (keys && Array.isArray(keys)) {
-        Object.keys(storedData).forEach(key => {
-          if (!keys.includes(key)) {
-            delete storedData[key]
-          }
-        })
-      }
 
-      console.warn('Getting from storage:')
-      console.log('[object keys]', keys)
-      console.log('[key]', storageKey)
-      console.log('[value]', storedData)
-
-      callback(storedData)
+      callApp('storage.get', { keys: keys, storageKey: storageKey }, callback)
     },
     /**
       * @param {Array<string>} [keys] array of keys
@@ -145,32 +169,33 @@ window.stqry = {
       */
     remove: function (keys, callback, customKey) {
       var storageKey = customKey || STORAGE_KEY
-      if (window.stqryRuntime === "ReactNative") {
-        callReactNative("storage.remove", { keys: keys, storageKey: storageKey }, callback)
+      if (window.stqryRuntime === 'NoRuntime') {
+        if (keys && Array.isArray(keys)) {
+          var storedData = getStoredData(storageKey)
+          
+          keys.forEach(key => {
+            delete storedData[key]
+          })
+          
+          setStoredData(storageKey, storedData)
+          console.warn('Removing from storage:')
+          console.log('[object keys]', keys)
+          console.log('[key]', storageKey)
+        } else {
+          Object.keys(window.localStorage).forEach(function (key) {
+            if (key.startsWith(storageKey)) {
+              window.localStorage.removeItem(key)
+            }
+          })
+          console.warn('Removing from storage:')
+          console.log('[key]', storageKey)
+        }
+
+        callback()
         return
       }
-      if (keys && Array.isArray(keys)) {
-        var storedData = getStoredData(storageKey)
-        
-        keys.forEach(key => {
-          delete storedData[key]
-        })
-        
-        setStoredData(storageKey, storedData)
-        console.warn('Removing from storage:')
-        console.log('[object keys]', keys)
-        console.log('[key]', storageKey)
-      } else {
-        Object.keys(window.localStorage).forEach(function (key) {
-          if (key.startsWith(storageKey)) {
-            window.localStorage.removeItem(key)
-          }
-        })
-        console.warn('Removing from storage:')
-        console.log('[key]', storageKey)
-      }
 
-      callback()
+      callApp('storage.remove', { keys: keys, storageKey: storageKey }, callback)
     }
   },
   linking: {
@@ -182,12 +207,13 @@ window.stqry = {
       * @param {function()} callback callback function - calling after link openned
       */
     openInternal: function (data, callback) {
-      if (window.stqryRuntime === "ReactNative") {
-        callReactNative("linking.openInternal", { params: data })
+      if (window.stqryRuntime === 'NoRuntime') {
+        console.warn('Opening internal link: [id] [type] [subtype]', data)
         if (callback) callback()
         return
       }
-      console.warn('Opening internal link: [id] [type] [subtype]', data)
+  
+      callApp('linking.openInternal', { params: data })
       if (callback) callback()
     },
     /**
@@ -195,12 +221,13 @@ window.stqry = {
       * @param {function()} callback callback function - calling after link openned
       */
     openExternal: function (link, callback) {
-      if (window.stqryRuntime === "ReactNative") {
-        callReactNative("linking.openExternal", { link: link })
+      if (window.stqryRuntime === 'NoRuntime') {
+        console.warn('Opening external link: ', link, window)
         if (callback) callback()
         return
       }
-      console.warn('Opening external link: ', link)
+
+      callApp('linking.openExternal', { link: link })
       if (callback) callback()
     }
   },
@@ -273,4 +300,32 @@ window.stqry = {
       }
     }
   },
+}
+
+// Check if it's self page or react native webview
+// If so, then don't need to call window.stqry.init()
+if (window.self === window.top || window.stqryRuntime === 'ReactNative') {
+  window.stqry.loading = false
+}
+
+/**
+  * Check if stqry script is fully loaded
+  * Use that callback in frontend
+  * @param {function()} callback callback function - calling after link openned
+  */
+window.stqryOnLoad = function (successCallback) {
+  var attempt = 0
+  var loadingInterval = setInterval(function () {
+    if (attempt === 30) {
+      clearInterval(loadingInterval);
+      throw 'Maximum attempts exceeded';
+    }
+
+    if (!window.stqry.loading) {
+      successCallback();
+      clearInterval(loadingInterval);
+    } else {
+      attempt++;
+    }
+  }, 100);
 }
