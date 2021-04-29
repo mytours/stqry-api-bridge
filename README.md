@@ -11,14 +11,10 @@ More functionality will be added over time.
 
 To start using STQRY API Bridge you need to create a `start` function and put the next script into your code
 ```javascript
-window.onload = function () {
-  if (window.stqry) {
-    // your code here
-    // start()
-  } else {
-    console.error('Loading stqry.js error')
-  }
-}
+window.stqryOnLoad(function () {
+  // your code here
+  // start()
+});
 ```
 
 ## Testing
