@@ -72,26 +72,33 @@ window.addEventListener('message', onMessage)
 document.addEventListener('message', onMessage)
 
 function onMessage(event) {
-  var data = event.data
-  var message = JSON.parse(data)
-  if (message) {
-    var action = message.action
-    var version = message.version
-    if (version === 'v1' && action === 'callback') {
-      var callbackId = message.callbackId
-      var args = message.args
-      var callback = appCallbacks[callbackId]
-      if (callback) {
-        callback.apply(null, args)
-        delete appCallbacks[callbackId] // can only call back once
-      } else {
-        // callback is not set up at the moment
-      }
-    } else if (version === 'v1' && action === 'execute' && message.function) {
-      eval(message.function)
+  var message
+  try {
+    message = JSON.parse(event.data)
+  } catch (error) {
+    // here can be any extension, so the error isn't logged
+  }
+  
+  if (!message) {
+    return
+  }
+
+  var action = message.action
+  var version = message.version
+  if (version === 'v1' && action === 'callback') {
+    var callbackId = message.callbackId
+    var args = message.args
+    var callback = appCallbacks[callbackId]
+    if (callback) {
+      callback.apply(null, args)
+      delete appCallbacks[callbackId] // can only call back once
     } else {
-      // malformed message, ignore
+      // callback is not set up at the moment
     }
+  } else if (version === 'v1' && action === 'execute' && message.function) {
+    eval(message.function)
+  } else {
+    // malformed message, ignore
   }
 }
 
@@ -243,28 +250,7 @@ window.stqry = {
       var _this = this
       _this._video = document.querySelector('#' + videoTagId);
 
-      if (window.stqryRuntime === "ReactNative") {
-        callReactNative("camera.requestCameraPermission", {}, function(permissionStatus, error) {
-          if (error) console.error('camera.requestCameraPermission error', error)
-          if (permissionStatus !== "granted" && permissionStatus !== "bypassed") {
-            if (callback) callback(new Error("Camera permission is not granted or bypassed. Camera permission is '"+permissionStatus+"' instead."))
-            return
-          }
-          if (navigator.mediaDevices.getUserMedia) {
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }})
-              .then(function (stream) {
-                _this._video.srcObject = stream;
-                if (callback) callback()
-              })
-              .catch(function (error) {
-                if (callback) callback(error)
-              });
-          }
-        })
-        return
-      }
-
-      setTimeout(function () {
+      function requestCameraPermission() {
         if (navigator.mediaDevices.getUserMedia) {
           navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }})
             .then(function (stream) {
@@ -275,7 +261,23 @@ window.stqry = {
               if (callback) callback(error)
             });
         }
-      })
+      }
+
+      if (window.stqryRuntime === "ReactNative") {
+        callReactNative("camera.requestCameraPermission", {}, function(permissionStatus, error) {
+          if (error) console.error('camera.requestCameraPermission error', error)
+          if (permissionStatus !== "granted" && permissionStatus !== "bypassed") {
+            if (callback) callback(new Error("Camera permission is not granted or bypassed. Camera permission is '"+permissionStatus+"' instead."))
+            return
+          }
+          requestCameraPermission();
+        })
+        return
+      }
+
+      setTimeout(function () {
+        requestCameraPermission();
+      });
     },
     /**
       * @param {function()} callback callback function - calling after link openned
