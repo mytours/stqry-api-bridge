@@ -216,6 +216,27 @@ window.stqry = {
       var _this = this
       _this._video = document.querySelector('#' + videoTagId);
 
+      if (window.stqryRuntime === "ReactNative") {
+        callReactNative("camera.requestCameraPermission", {}, function(permissionStatus, error) {
+          if (error) console.error('camera.requestCameraPermission error', error)
+          if (permissionStatus !== "granted" && permissionStatus !== "bypassed") {
+            if (callback) callback(new Error("Camera permission is not granted or bypassed. Camera permission is '"+permissionStatus+"' instead."))
+            return
+          }
+          if (navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }})
+              .then(function (stream) {
+                _this._video.srcObject = stream;
+                if (callback) callback()
+              })
+              .catch(function (error) {
+                if (callback) callback(error)
+              });
+          }
+        })
+        return
+      }
+
       setTimeout(function () {
         if (navigator.mediaDevices.getUserMedia) {
           navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }})
