@@ -251,7 +251,7 @@ window.stqry = {
       _this._video = document.querySelector('#' + videoTagId);
 
       function enableBackgroundInternal() {
-        if (navigator.mediaDevices.getUserMedia) {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
           navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }})
             .then(function (stream) {
               _this._video.srcObject = stream;
@@ -260,6 +260,9 @@ window.stqry = {
             .catch(function (error) {
               if (callback) callback(error)
             });
+        }
+        else {
+          alert("Camera API is not available")
         }
       }
 
