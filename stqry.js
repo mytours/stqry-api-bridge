@@ -336,9 +336,14 @@ window.stqry = {
     }
   },
   kiosk: {
+    /**
+      * @param {String} url - original URL
+      * @param {function(string)} callback callback function - return the locally hosted URL
+      */
     getCachedAssetUrl: function (url, callback) {
       if (window.stqryRuntime !== 'ReactNative') {
         console.warn('`getCachedAssetUrl` is only supported on React Native')
+        callback(url)
         return
       }
 
