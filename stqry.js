@@ -29,13 +29,14 @@ function getStoredData(key) {
   }
 }
 
-var persistedCallback = {}
 var appCallbacks = {}
+var persistedCallback = {}
 var lastAppCallbackId = 0;
 /**
   * @param {string} action action to take in the parent app
   * @param {any} data data to send to the parent app
   * @param {function} callback callback for when the action is finished
+  * @param {boolean | function} persistCallback pass `true` to never delete callback, pass a test function to see if callback should be removed
   */
 function callApp(action, data, callback, persistCallback) {
   if (callback) {
@@ -48,7 +49,7 @@ function callApp(action, data, callback, persistCallback) {
     }
     appCallbacks[callbackId] = callback
     if (persistCallback) {
-      persistedCallback[callbackId] = true
+      persistedCallback[callbackId] = persistCallback
     }
     lastAppCallbackId++
 
@@ -97,6 +98,11 @@ function onMessage(event) {
       callback.apply(null, args)
       if (!persistedCallback[callbackId]) {
         delete appCallbacks[callbackId]
+      } else if (typeof persistedCallback[callbackId] === 'function') {
+        if (persistedCallback[callbackId].apply(null, args)) {
+          delete appCallbacks[callbackId]
+          delete persistedCallback[callbackId]
+        }
       }
     } else {
       // callback is not set up at the moment
@@ -322,7 +328,11 @@ window.stqry = {
         return
       }
 
-      callApp('fs.downloadFile', { url }, callback, true)
+      callApp('fs.downloadFile', { url }, callback, (error, received, total) => {
+        if (error || (!received && !total)) {
+          return true
+        }
+      })
     }
   },
   kiosk: {
