@@ -29,6 +29,7 @@ function getStoredData(key) {
   }
 }
 
+var persistedCallback = {}
 var appCallbacks = {}
 var lastAppCallbackId = 0;
 /**
@@ -36,7 +37,7 @@ var lastAppCallbackId = 0;
   * @param {any} data data to send to the parent app
   * @param {function} callback callback for when the action is finished
   */
-function callApp(action, data, callback) {
+function callApp(action, data, callback, persistCallback) {
   if (callback) {
     var callbackId = lastAppCallbackId
     var message = {
@@ -46,6 +47,9 @@ function callApp(action, data, callback) {
       callbackId: callbackId,
     }
     appCallbacks[callbackId] = callback
+    if (persistCallback) {
+      persistedCallback[callbackId] = true
+    }
     lastAppCallbackId++
 
     if (window.stqryRuntime === 'ReactNative') {
@@ -91,7 +95,9 @@ function onMessage(event) {
     var callback = appCallbacks[callbackId]
     if (callback) {
       callback.apply(null, args)
-      delete appCallbacks[callbackId] // can only call back once
+      if (!persistedCallback[callbackId]) {
+        delete appCallbacks[callbackId]
+      }
     } else {
       // callback is not set up at the moment
     }
@@ -305,6 +311,38 @@ window.stqry = {
       }
     }
   },
+  fs: {
+    /**
+      * @param {String} url - URL of file to download
+      * @param {function(string | undefined, number | undefined, number | undefined)} callback callback function - report progress/error
+      */
+    downloadFile: function (url, callback) {
+      if (window.stqryRuntime !== 'ReactNative') {
+        console.warn('`downloadFile` is only supported on React Native')
+        return
+      }
+
+      callApp('fs.downloadFile', { url }, callback, true)
+    }
+  },
+  kiosk: {
+    getCachedAssetUrl: function (url, callback) {
+      if (window.stqryRuntime !== 'ReactNative') {
+        console.warn('`getCachedAssetUrl` is only supported on React Native')
+        return
+      }
+
+      callApp('kiosk.getCachedAssetUrl', { url }, callback)
+    },
+    exit: function () {
+      if (window.stqryRuntime !== 'ReactNative') {
+        console.warn('`exit` is only supported on React Native')
+        return
+      }
+
+      callApp('kiosk.exit')
+    }
+  }
 }
 
 // Check if it's self page or react native webview
