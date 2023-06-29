@@ -338,7 +338,7 @@ window.stqry = {
   kiosk: {
     /**
       * @param {String} url - original URL
-      * @param {function(string)} callback callback function - return the locally hosted URL
+      * @param {function(string | undefined)} callback callback function - return the locally hosted URL
       */
     getCachedAssetUrl: function (url, callback) {
       if (window.stqryRuntime !== 'ReactNative') {
@@ -348,6 +348,14 @@ window.stqry = {
       }
 
       callApp('kiosk.getCachedAssetUrl', { url }, callback)
+    },
+    clearCache: function () {
+      if (window.stqryRuntime !== 'ReactNative') {
+        console.warn('`clearCache` is only supported on React Native')
+        return
+      }
+
+      callApp('kiosk.clearCache')
     },
     exit: function () {
       if (window.stqryRuntime !== 'ReactNative') {
