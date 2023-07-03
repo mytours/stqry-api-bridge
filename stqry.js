@@ -250,6 +250,11 @@ window.stqry = {
       if (callback) callback()
     }
   },
+  navigation: {
+    back: function () {
+      callApp('navigation.back')
+    }
+  },
   camera: {
     /**
       * @param {String} videoTagId - id of video element
