@@ -333,7 +333,7 @@ window.stqry = {
         return
       }
 
-      callApp('fs.downloadFile', { url }, callback, (error, received, total) => {
+      callApp('fs.downloadFile', { url, fileName: url }, callback, (error, received, total) => {
         if (error || (!received && !total)) {
           return true
         }
@@ -343,16 +343,15 @@ window.stqry = {
   kiosk: {
     /**
       * @param {String} url - original URL
-      * @param {function(string | undefined)} callback callback function - return the locally hosted URL
       */
-    getCachedAssetUrl: function (url, callback) {
+    getCachedAssetUrl: function (url) {
       if (window.stqryRuntime !== 'ReactNative') {
         console.warn('`getCachedAssetUrl` is only supported on React Native')
         callback(url)
         return
       }
 
-      callApp('kiosk.getCachedAssetUrl', { url }, callback)
+      return `http://localhost:${window.stqryKioskPort || 8080}/${encodeURIComponent(url)}`
     },
     clearCache: function () {
       if (window.stqryRuntime !== 'ReactNative') {
