@@ -347,7 +347,6 @@ window.stqry = {
     getCachedAssetUrl: function (url) {
       if (window.stqryRuntime !== 'ReactNative') {
         console.warn('`getCachedAssetUrl` is only supported on React Native')
-        callback(url)
         return
       }
 
