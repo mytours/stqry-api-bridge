@@ -350,7 +350,7 @@ window.stqry = {
         return
       }
 
-      return `http://localhost:${window.stqryKioskPort || 8080}/${encodeURIComponent(url)}`
+      return `http://localhost:${window.stqryKioskPort || 9101}/api/${encodeURIComponent(url)}`
     },
     clearCache: function () {
       if (window.stqryRuntime !== 'ReactNative') {
