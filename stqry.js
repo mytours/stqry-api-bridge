@@ -322,7 +322,7 @@ window.stqry = {
       }
     }
   },
-  fs: {
+  kiosk: {
     /**
       * @param {String} url - URL of file to download
       * @param {function(string | undefined, number | undefined, number | undefined)} callback callback function - report progress/error
@@ -333,24 +333,31 @@ window.stqry = {
         return
       }
 
-      callApp('fs.downloadFile', { url, fileName: url }, callback, (error, received, total) => {
+      callApp('kiosk.downloadFile', { url, fileName: url }, callback, (error, received, total) => {
         if (error || (!received && !total)) {
           return true
         }
       })
-    }
-  },
-  kiosk: {
+    },
     /**
       * @param {String} url - original URL
       */
     getCachedAssetUrl: function (url) {
       if (window.stqryRuntime !== 'ReactNative') {
         console.warn('`getCachedAssetUrl` is only supported on React Native')
-        return
+        return url
       }
 
       return `http://localhost:${window.stqryKioskPort || 9101}/api/${encodeURIComponent(url)}`
+    },
+    getOriginalUrlFromCachedAssetUrl: function (cachedUrl) {
+      if (window.stqryRuntime !== 'ReactNative') {
+        console.warn('`getOriginalUrlFromCachedAssetUrl` is only supported on React Native')
+        return cachedUrl
+      }
+
+      const encodedOriginalUrl = cachedUrl.replace(`http://localhost:${window.stqryKioskPort || 9101}/api/`, '')
+      return decodeURIComponent(encodedOriginalUrl)
     },
     clearCache: function () {
       if (window.stqryRuntime !== 'ReactNative') {
