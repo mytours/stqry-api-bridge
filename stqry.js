@@ -367,6 +367,14 @@ window.stqry = {
 
       callApp('kiosk.clearCache')
     },
+    updateBundle: function () {
+      if (window.stqryRuntime !== 'ReactNative') {
+        console.warn('`updateBundle` is only supported on React Native')
+        return
+      }
+
+      callApp('kiosk.updateBundle')
+    },
     exit: function () {
       if (window.stqryRuntime !== 'ReactNative') {
         console.warn('`exit` is only supported on React Native')
