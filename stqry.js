@@ -333,7 +333,7 @@ window.stqry = {
         return
       }
 
-      callApp('kiosk.downloadFile', { url, fileName: url }, callback, (error, received, total) => {
+      callApp('kiosk.downloadFile', { url }, callback, (error, received, total) => {
         if (error || (!received && !total)) {
           return true
         }
