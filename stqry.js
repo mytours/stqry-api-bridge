@@ -50,7 +50,7 @@ function callApp(action, data, callback) {
 
     if (window.stqryRuntime === 'ReactNative') {
       window.ReactNativeWebView.postMessage(JSON.stringify(message))
-    } else if (window.stqryRuntime === 'MobileWeb') {
+    } else if (window.stqryRuntime === 'MobileWeb' || window.stqryRuntime === 'Kiosk') {
       window.parent.postMessage(JSON.stringify(message), '*')
     }
   } else {
@@ -62,7 +62,7 @@ function callApp(action, data, callback) {
 
     if (window.stqryRuntime === 'ReactNative') {
       window.ReactNativeWebView.postMessage(JSON.stringify(message))
-    } else if (window.stqryRuntime === 'MobileWeb') {
+    } else if (window.stqryRuntime === 'MobileWeb' || window.stqryRuntime === 'Kiosk') {
       window.parent.postMessage(JSON.stringify(message), '*')
     }
   }
@@ -310,6 +310,35 @@ window.stqry = {
       }
     }
   },
+  media: {
+    /**
+     * Get media by id.
+     * @param {number} mediaId The id of the media.
+     * @param {string | undefined} language The language of the media. If not
+     * provided, the user's selected language will be used. If neither is
+     * provided, any language will be used.
+     * @param {function()} callback callback function - calling after link openned
+     */
+    get: function (mediaId, language, callback) {
+      if (window.stqryRuntime === 'Kiosk') {
+        callApp('media.get', { mediaId, language }, (item, files) => {
+          callback(
+            item,
+            Object.fromEntries(
+              Object.entries(files).map(([key, value]) => [
+                key,
+                new Response(value.arrayBuffer, {
+                  status: value.status,
+                  statusText: value.statusText,
+                  headers: new Headers(value.headers),
+                }),
+              ])
+            )
+          );
+        })
+      }
+    }
+  }
 }
 
 // Check if it's self page or react native webview
