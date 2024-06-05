@@ -50,8 +50,10 @@ function callApp(action, data, callback) {
 
     if (window.stqryRuntime === 'ReactNative') {
       window.ReactNativeWebView.postMessage(JSON.stringify(message))
-    } else if (window.stqryRuntime === 'MobileWeb' || window.stqryRuntime === 'Kiosk') {
+    } else if (window.stqryRuntime === 'MobileWeb') {
       window.parent.postMessage(JSON.stringify(message), '*')
+    } else if (window.stqryRuntime === 'Kiosk') {
+      window.parent.postMessage(message, '*')
     }
   } else {
     var message = {
@@ -62,8 +64,10 @@ function callApp(action, data, callback) {
 
     if (window.stqryRuntime === 'ReactNative') {
       window.ReactNativeWebView.postMessage(JSON.stringify(message))
-    } else if (window.stqryRuntime === 'MobileWeb' || window.stqryRuntime === 'Kiosk') {
+    } else if (window.stqryRuntime === 'MobileWeb') {
       window.parent.postMessage(JSON.stringify(message), '*')
+    } else if (window.stqryRuntime === 'Kiosk') {
+      window.parent.postMessage(message, '*')
     }
   }
 }
@@ -73,10 +77,14 @@ document.addEventListener('message', onMessage)
 
 function onMessage(event) {
   var message
-  try {
-    message = JSON.parse(event.data)
-  } catch (error) {
-    // here can be any extension, so the error isn't logged
+  if (window.stqryRuntime === 'Kiosk') {
+    message = event.data
+  } else {
+    try {
+        message = JSON.parse(event.data)
+    } catch (error) {
+      // here can be any extension, so the error isn't logged
+    }
   }
   
   if (!message) {
@@ -317,7 +325,8 @@ window.stqry = {
      * @param {string | undefined} language The language of the media. If not
      * provided, the user's selected language will be used. If neither is
      * provided, any language will be used.
-     * @param {function()} callback callback function - calling after link openned
+     * @param {function()} callback The callback function that will be called
+     * with the media item and a dictionary of responses for each file.
      */
     get: function (mediaId, language, callback) {
       if (window.stqryRuntime === 'Kiosk') {
@@ -327,10 +336,10 @@ window.stqry = {
             Object.fromEntries(
               Object.entries(files).map(([key, value]) => [
                 key,
-                new Response(value.arrayBuffer, {
+                new Response(value.blob, {
                   status: value.status,
                   statusText: value.statusText,
-                  headers: new Headers(value.headers),
+                  headers: value.headers,
                 }),
               ])
             )
