@@ -244,11 +244,49 @@ window.stqry = {
 
       callApp('linking.openExternal', { link: link })
       if (callback) callback()
+    },
+    /**
+      * @param {function()} callback callback function - calling after launch screen opened
+      */
+    openLaunchScreen: function (callback) {
+      if (window.stqryRuntime === 'NoRuntime') {
+        console.warn('Opening launch screen')
+        if (callback) callback()
+        return
+      }
+
+      callApp('linking.openLaunchScreen')
+      if (callback) callback()
     }
   },
   navigation: {
     back: function () {
       callApp('navigation.back')
+    }
+  },
+  language: {
+    /**
+      * Get the current language.
+      * @param {function(string)} callback callback function - receives the language code
+      */
+    get: function (callback) {
+      if (window.stqryRuntime === 'NoRuntime') {
+        console.warn('Getting language')
+        if (callback) callback('en')
+        return
+      }
+      callApp('language.get', {}, callback)
+    },
+    /**
+      * Set the current language.
+      * @param {string} languageCode language code to set
+      */
+    set: function (languageCode) {
+      if (window.stqryRuntime === 'NoRuntime') {
+        console.warn('Setting language:', languageCode)
+        return
+      }
+      callApp('language.set', { languageCode: languageCode })
     }
   },
   camera: {
@@ -334,18 +372,64 @@ window.stqry = {
           callback(
             item,
             Object.fromEntries(
-              Object.entries(files).map(([key, value]) => [
-                key,
-                new Response(value.blob, {
-                  status: value.status,
-                  statusText: value.statusText,
-                  headers: value.headers,
-                }),
-              ])
+              Object.entries(files).map(([key, value]) => {
+                if (!value) return [key, null]
+                return [
+                  key,
+                  new Response(value.blob, {
+                    status: value.status,
+                    statusText: value.statusText,
+                    headers: value.headers,
+                  }),
+                ]
+              })
             )
           );
         })
       }
+    }
+  },
+  screen: {
+    /**
+      * Opens a window on another screen. Kiosk runtime only.
+      * @param {string} url URL to open on the other screen
+      */
+    open: function (url) {
+      if (window.stqryRuntime === 'NoRuntime') {
+        console.warn('Opening screen:', url)
+        return
+      }
+      if (window.stqryRuntime === 'Kiosk') {
+        callApp('screen.open', { url: url })
+      }
+    },
+    /**
+      * Send a message to the other screen. Kiosk runtime only.
+      * @param {*} message message to send
+      */
+    send: function (message) {
+      if (window.stqryRuntime === 'NoRuntime') {
+        console.warn('Sending to screen:', message)
+        return
+      }
+      if (window.stqryRuntime === 'Kiosk') {
+        callApp('screen.send', { message: message })
+      }
+    },
+    /**
+      * Receive messages from the other screen. Kiosk runtime only.
+      * @param {function(*)} callback callback function - receives the message
+      */
+    receive: function (callback) {
+      if (window.stqryRuntime === 'NoRuntime') {
+        console.warn('Listening for screen messages')
+        return
+      }
+      // Receive message from the other screen via electron ipc
+      window.electron?.ipcRenderer.on('screenReceive', function (_event, message) {
+        console.log('Received message from screen', message)
+        callback(message)
+      })
     }
   }
 }
