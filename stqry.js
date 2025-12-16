@@ -389,6 +389,22 @@ window.stqry = {
       }
     }
   },
+  badge: {
+    /**
+      * Earn one or more badges by id.
+      * @param {number[]} badgeIds Array of badge ids to earn.
+      * @param {function()} callback callback function - called after badges are earned
+      */
+    earn: function (badgeIds, callback) {
+      if (window.stqryRuntime === 'NoRuntime') {
+        console.warn('Earning badges:', badgeIds)
+        if (callback) callback()
+        return
+      }
+
+      callApp('badge.earn', { badgeIds: badgeIds }, callback)
+    }
+  },
   screen: {
     /**
       * Opens a window on another screen. Kiosk runtime only.
