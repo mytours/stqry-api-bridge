@@ -260,6 +260,9 @@ window.stqry = {
     }
   },
   navigation: {
+    /**
+      * Go back to the previous screen.
+      */
     back: function () {
       callApp('navigation.back')
     }
