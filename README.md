@@ -25,6 +25,10 @@ When testing your web app locally the console will output details of what is bei
 
 The test suite for `stqry.js` can be found in `stqry-test/` folder. Load the page in a browser or one of the STQRY apps to test `stqry.js` methods.
 
+## Examples
+
+See [EXAMPLES.md](EXAMPLES.md) for common use cases.
+
 ## API
 
 ### storage
